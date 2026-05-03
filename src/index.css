@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-brand-cream font-sans text-brand-ink antialiased;
+    background-image:
+      radial-gradient(circle at top right, rgba(253, 139, 0, 0.15), transparent 30%),
+      radial-gradient(circle at left 20%, rgba(55, 92, 145, 0.14), transparent 25%);
+  }
+
+  a {
+    @apply transition-colors;
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-[28px] border border-white/60 bg-white/80 shadow-soft backdrop-blur-xl;
+  }
+
+  .primary-button {
+    @apply inline-flex items-center justify-center rounded-full bg-brand-orange px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:shadow-soft;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center justify-center rounded-full border border-brand-ink/10 bg-white px-5 py-3 text-sm font-semibold text-brand-ink transition hover:border-brand-orange/30 hover:text-brand-orange;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em];
+  }
+
+  .page-grid {
+    @apply grid gap-6 lg:grid-cols-[1.2fr_0.8fr];
+  }
+}
