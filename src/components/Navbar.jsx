@@ -13,9 +13,11 @@ const navItems = [
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const token = useAuthStore((state) => state.token)
   const user = useAuthStore((state) => state.user)
-  const authTarget = user ? dashboardPath(user) : '/login'
-  const authLabel = user ? 'Dashboard' : 'Login'
+  const isAuthenticated = Boolean(token && user)
+  const authTarget = isAuthenticated ? dashboardPath(user) : '/login'
+  const authLabel = isAuthenticated ? 'Dashboard' : 'Login'
 
   return (
     <header className="sticky inset-x-0 top-0 z-50 border-b border-white/40 bg-white/80 backdrop-blur-xl">
@@ -62,7 +64,7 @@ export function Navbar() {
             to={authTarget} 
             className="hidden sm:inline-flex items-center gap-2 rounded-full bg-brand-ink/5 px-4 py-2.5 text-sm font-semibold text-brand-ink/70 hover:bg-brand-orange/10 hover:text-brand-orange transition-all"
           >
-            {user ? <User size={16} /> : <LogIn size={16} />}
+            {isAuthenticated ? <User size={16} /> : <LogIn size={16} />}
             <span>{authLabel}</span>
           </Link>
 
@@ -72,7 +74,7 @@ export function Navbar() {
             className="sm:hidden flex h-10 w-10 items-center justify-center rounded-full bg-brand-ink/5 text-brand-ink/70 hover:bg-brand-orange/10 hover:text-brand-orange transition-all"
             aria-label={authLabel}
           >
-            {user ? <User size={18} /> : <LogIn size={18} />}
+            {isAuthenticated ? <User size={18} /> : <LogIn size={18} />}
           </Link>
 
           {/* Cart Button */}
@@ -126,8 +128,8 @@ export function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-brand-ink/65 hover:bg-brand-orange/10 hover:text-brand-orange transition-all"
             >
-              {user ? <User size={18} /> : <LogIn size={18} />}
-              {user ? 'Open dashboard' : 'Login to Account'}
+              {isAuthenticated ? <User size={18} /> : <LogIn size={18} />}
+              {isAuthenticated ? 'Open dashboard' : 'Login to Account'}
             </Link>
           </nav>
         </div>
