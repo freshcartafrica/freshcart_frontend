@@ -10,8 +10,9 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { endpoints } from '../../lib/api'
+import { addProductToCart } from '../../lib/cartActions'
 import {
   categoryTheme,
   countCartItems,
@@ -23,6 +24,7 @@ import { useAuthStore } from '../../store/authStore'
 
 export default function CategoryDetailPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { categoryId } = useParams()
   const token = useAuthStore((state) => state.token)
   const [viewMode, setViewMode] = useState('grid')
@@ -99,15 +101,15 @@ export default function CategoryDetailPage() {
   const cartCount = countCartItems(cart)
 
   const addToCart = async (productId) => {
-    if (!token) {
-      navigate('/login')
-      return
-    }
-
     try {
       setAddingId(productId)
-      const response = await endpoints.addToCart({ product_id: productId, quantity: 1 })
-      setCart(response.data)
+      await addProductToCart({
+        token,
+        navigate,
+        pathname: location.pathname,
+        productId,
+        onSuccess: setCart,
+      })
     } catch (submitError) {
       setError(submitError?.response?.data?.detail || 'Unable to add this item.')
     } finally {

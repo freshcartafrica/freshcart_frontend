@@ -8,8 +8,9 @@ import {
   ShoppingCart,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { endpoints } from '../../lib/api'
+import { addProductToCart } from '../../lib/cartActions'
 import {
   buildProductSnapshot,
   countCartItems,
@@ -21,6 +22,7 @@ import { useAuthStore } from '../../store/authStore'
 
 export default function ProductDetailPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { productId } = useParams()
   const token = useAuthStore((state) => state.token)
   const [quantity, setQuantity] = useState(1)
@@ -70,14 +72,16 @@ export default function ProductDetailPage() {
 
   const addToCart = async () => {
     if (!product) return
-    if (!token) {
-      navigate('/login')
-      return
-    }
 
     try {
-      const response = await endpoints.addToCart({ product_id: product.id, quantity })
-      setCart(response.data)
+      await addProductToCart({
+        token,
+        navigate,
+        pathname: location.pathname,
+        productId: product.id,
+        quantity,
+        onSuccess: setCart,
+      })
     } catch (submitError) {
       setError(submitError?.response?.data?.detail || 'Unable to add this item.')
     }

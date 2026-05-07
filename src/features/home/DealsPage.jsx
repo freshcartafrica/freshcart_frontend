@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   LuArrowRight,
   LuBadgeCheck,
@@ -20,11 +20,13 @@ import {
   LuZap,
 } from 'react-icons/lu'
 import { endpoints } from '../../lib/api'
+import { addProductToCart } from '../../lib/cartActions'
 import { formatCurrency, getProductImage } from '../../lib/shopper'
 import { useAuthStore } from '../../store/authStore'
 
 const DealsPage = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const token = useAuthStore((state) => state.token)
   
@@ -147,14 +149,15 @@ const DealsPage = () => {
   }
 
   const addToCart = async (productId, count = 1) => {
-    if (!token) {
-      navigate('/login')
-      return
-    }
-
     try {
       setAddingId(productId)
-      await endpoints.addToCart({ product_id: productId, quantity: count })
+      await addProductToCart({
+        token,
+        navigate,
+        pathname: location.pathname + location.search,
+        productId,
+        quantity: count,
+      })
     } catch (submitError) {
       setError(submitError?.response?.data?.detail || 'Unable to add item to cart.')
     } finally {

@@ -3,7 +3,15 @@ import { DashboardBottomNav } from '../components/DashboardBottomNav'
 import { Footer } from '../components/Footer'
 import { Navbar } from '../components/Navbar'
 import { OfflineBanner } from '../components/ui/OfflineBanner'
-import AdminPage from '../features/profile/AdminPage'
+import AdminDashboardPage from '../features/admin/AdminDashboardPage'
+import AdminLoginPage from '../features/admin/AdminLoginPage'
+import AdminOrdersPage from '../features/admin/AdminOrdersPage'
+import AdminRidersPage from '../features/admin/AdminRidersPage'
+import AdminSignupPage from '../features/admin/AdminSignupPage'
+import AdminTrackingPage from '../features/admin/AdminTrackingPage'
+import AdminUsersPage from '../features/admin/AdminUsersPage'
+import AdminVendorsPage from '../features/admin/AdminVendorsPage'
+import AdminVerificationPage from '../features/admin/AdminVerificationPage'
 import ProfilePage from '../features/profile/ProfilePage'
 import VendorPage from '../features/profile/VendorPage'
 import AuthPage from '../features/auth/AuthPage'
@@ -91,7 +99,7 @@ function ShopperLayout() {
 
 function PortalLayout() {
   return (
-    <div className="min-h-screen bg-brand-cream">
+    <div className="min-h-screen bg-white">
       <OfflineBanner />
       <div className="mx-auto min-h-screen max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Outlet />
@@ -102,7 +110,7 @@ function PortalLayout() {
 
 function AuthLayout() {
   return (
-    <div className="min-h-screen bg-brand-cream">
+    <div className="min-h-screen bg-white">
       <OfflineBanner />
       <Outlet />
     </div>
@@ -151,6 +159,22 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: 'admin/login',
+        element: (
+          <RedirectAuthenticated>
+            <AdminLoginPage />
+          </RedirectAuthenticated>
+        ),
+      },
+      {
+        path: 'admin/signup',
+        element: (
+          <RedirectAuthenticated>
+            <AdminSignupPage />
+          </RedirectAuthenticated>
+        ),
+      },
+      {
         path: 'onboarding',
         element: (
           <RequireAuth roles={['user']} allowIncompleteOnboarding>
@@ -185,7 +209,13 @@ export const router = createBrowserRouter([
       { path: 'vendor/upload-product', element: <RequireAuth roles={['vendor']}><UploadProductPage /></RequireAuth> },
       { path: 'vendor/inventory', element: <RequireAuth roles={['vendor']}><InventoryPage /></RequireAuth> },
       { path: 'vendor/orders', element: <RequireAuth roles={['vendor']}><VendorOrdersPage /></RequireAuth> },
-      { path: 'admin', element: <RequireAuth roles={['admin']}><AdminPage /></RequireAuth> },
+      { path: 'admin', element: <RequireAuth roles={['admin']}><AdminDashboardPage /></RequireAuth> },
+      { path: 'admin/orders', element: <RequireAuth roles={['admin']}><AdminOrdersPage /></RequireAuth> },
+      { path: 'admin/vendors', element: <RequireAuth roles={['admin']}><AdminVendorsPage /></RequireAuth> },
+      { path: 'admin/users', element: <RequireAuth roles={['admin']}><AdminUsersPage /></RequireAuth> },
+      { path: 'admin/riders', element: <RequireAuth roles={['admin']}><AdminRidersPage /></RequireAuth> },
+      { path: 'admin/verification', element: <RequireAuth roles={['admin']}><AdminVerificationPage /></RequireAuth> },
+      { path: 'admin/tracking', element: <RequireAuth roles={['admin']}><AdminTrackingPage /></RequireAuth> },
     ],
   },
   {

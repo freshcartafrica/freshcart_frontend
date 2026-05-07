@@ -18,6 +18,7 @@ export default function SignUp() {
     acceptedTerms: false,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
 
   const handleChange = ({ target: { name, value, type, checked } }) => {
@@ -176,7 +177,7 @@ export default function SignUp() {
                     </svg>
                   </div>
                   <input 
-                    type="password" 
+                    type={showPassword ? 'text' : 'password'} 
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
@@ -186,12 +187,27 @@ export default function SignUp() {
                     required
                     className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-orange-500/60 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-slate-400" 
                   />
-                  <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-slate-400 hover:text-slate-600">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.644 10.9 10.9 0 0118.928 0 1.012 1.012 0 010 .644A10.9 10.9 0 012.036 12.322z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      {showPassword ? (
+                        <>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M10.58 10.58a3 3 0 104.24 4.24" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.88 5.09A10.94 10.94 0 0112 4.5c5.23 0 9.55 3.69 10.5 8.5a10.98 10.98 0 01-4.04 6.15M6.23 6.23A10.96 10.96 0 001.5 12c.62 3.13 2.68 5.77 5.55 7.18" />
+                        </>
+                      ) : (
+                        <>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.644 10.9 10.9 0 0118.928 0 1.012 1.012 0 010 .644A10.9 10.9 0 012.036 12.322z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </>
+                      )}
                     </svg>
-                  </div>
+                  </button>
                 </div>
               </div>
 

@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  Bell,
   ChevronRight,
   Clock,
   MapPin,
@@ -11,8 +10,10 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { NotificationBell } from '../../components/NotificationBell'
 import { endpoints } from '../../lib/api'
+import { addProductToCart } from '../../lib/cartActions'
 import {
   activeOrderFromList,
   countCartItems,
@@ -26,6 +27,7 @@ import { useAuthStore } from '../../store/authStore'
 
 export default function FreshCartDashboard() {
   const navigate = useNavigate()
+  const location = useLocation()
   const user = useAuthStore((state) => state.user)
   const [search, setSearch] = useState('')
   const [categories, setCategories] = useState([])
@@ -71,8 +73,13 @@ export default function FreshCartDashboard() {
   const addToCart = async (productId) => {
     try {
       setAddingId(productId)
-      const response = await endpoints.addToCart({ product_id: productId, quantity: 1 })
-      setCart(response.data)
+      await addProductToCart({
+        token: useAuthStore.getState().token,
+        navigate,
+        pathname: location.pathname,
+        productId,
+        onSuccess: setCart,
+      })
     } catch (submitError) {
       setError(submitError?.response?.data?.detail || 'Unable to add this item right now.')
     } finally {
@@ -108,10 +115,11 @@ export default function FreshCartDashboard() {
           </Link>
 
           <div className="flex items-center gap-3">
-            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200/60 bg-neutral-50">
-              <Bell className="h-4 w-4 text-neutral-600" />
-              {activeOrder ? <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-emerald-600" /> : null}
-            </button>
+            <NotificationBell
+              buttonClassName="relative flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200/60 bg-neutral-50"
+              iconClassName="h-4 w-4 text-neutral-600"
+              dotClassName="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white"
+            />
 
             <Link to="/cart" className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-emerald-200/50 bg-emerald-50/60">
               <ShoppingBag className="h-4 w-4 text-emerald-700" />

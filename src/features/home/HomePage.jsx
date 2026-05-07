@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   LuShoppingBag, 
   LuSearch, 
@@ -16,8 +16,51 @@ import {
   LuHeadphones 
 } from "react-icons/lu";
 import { MdOutlineLocalMall } from "react-icons/md";
+import { useLocation, useNavigate } from 'react-router-dom';
+import { endpoints } from '../../lib/api';
+import { addProductToCart } from '../../lib/cartActions';
+import { formatCurrency, getProductImage } from '../../lib/shopper';
+import { useAuthStore } from '../../store/authStore';
 
 const FreshCartLanding = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const token = useAuthStore((state) => state.token)
+  const [search, setSearch] = useState('')
+  const [featuredProducts, setFeaturedProducts] = useState([])
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const response = await endpoints.products({ featured: true })
+        if (!cancelled) setFeaturedProducts(response.data.slice(0, 4))
+      } catch {
+        if (!cancelled) setError('Unable to load featured products right now.')
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const handleAddToCart = async (productId) => {
+    try {
+      await addProductToCart({
+        token,
+        navigate,
+        pathname: location.pathname,
+        productId,
+      })
+    } catch (submitError) {
+      setError(submitError?.response?.data?.detail || 'Unable to add item to cart.')
+    }
+  }
+
   return (
     <>
       <style>
@@ -65,7 +108,7 @@ const FreshCartLanding = () => {
                     Convenience meets affordability. Get hand-picked fresh farm produce and daily essentials at your doorstep in under 45 minutes.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <button className="bg-green-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-400 transition-all editorial-shadow">
+                    <button onClick={() => navigate('/products')} className="bg-green-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-400 transition-all editorial-shadow">
                       Start Shopping
                     </button>
                     <div className="flex items-center gap-3 px-4 py-2">
@@ -102,9 +145,9 @@ const FreshCartLanding = () => {
             <div className="bg-white p-3 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center gap-4 border border-slate-100">
               <div className="flex-1 flex items-center px-4 gap-3 bg-slate-50 rounded-xl h-14">
                 <LuSearch className="text-slate-400" size={20} />
-                <input className="bg-transparent border-none focus:ring-0 w-full text-slate-700 placeholder:text-slate-400 font-medium" placeholder="Search for fresh mangoes, bread, or milk..." type="text" />
+                <input className="bg-transparent border-none focus:ring-0 w-full text-slate-700 placeholder:text-slate-400 font-medium" placeholder="Search for fresh mangoes, bread, or milk..." type="text" value={search} onChange={(event) => setSearch(event.target.value)} />
               </div>
-              <button className="bg-slate-900 text-white px-8 h-14 rounded-xl font-bold hover:bg-slate-800 transition-all">
+              <button onClick={() => navigate(search ? `/products?search=${encodeURIComponent(search)}` : '/products')} className="bg-slate-900 text-white px-8 h-14 rounded-xl font-bold hover:bg-slate-800 transition-all">
                 Search
               </button>
             </div>
@@ -117,7 +160,7 @@ const FreshCartLanding = () => {
                 <h2 className="text-4xl font-black text-slate-900 tracking-tight">Shop by Category</h2>
                 <p className="text-slate-500 mt-2 font-medium">Carefully curated for your daily needs</p>
               </div>
-              <button className="text-green-600 font-bold flex items-center gap-2 hover:translate-x-1 transition-all">
+              <button onClick={() => navigate('/products')} className="text-green-600 font-bold flex items-center gap-2 hover:translate-x-1 transition-all">
                 View All <LuArrowRight />
               </button>
             </div>
@@ -188,16 +231,12 @@ const FreshCartLanding = () => {
                 </button>
               </div>
             </div>
+            {error ? <p className="mb-4 text-sm font-medium text-red-500">{error}</p> : null}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                { title: 'Sweet Bananas', price: '2.49', cat: 'Fruits', img: 'https://images.unsplash.com/photo-1571771894821-ad99026107b8?auto=format&fit=crop&w=400' },
-                { title: 'Strawberries', price: '4.99', cat: 'Fruits', img: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=400' },
-                { title: 'Fresh Milk', price: '3.15', cat: 'Essentials', img: 'https://images.unsplash.com/photo-1550583724-125581fe2f8a?auto=format&fit=crop&w=400' },
-                { title: 'Sourdough', price: '5.50', cat: 'Bakery', img: 'https://images.unsplash.com/photo-1585478259715-876acc5be8eb?auto=format&fit=crop&w=400' }
-              ].map((product, i) => (
-                <div key={i} className="bg-white rounded-[2rem] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-slate-50 group hover:shadow-2xl transition-all">
+              {featuredProducts.map((product) => (
+                <div key={product.id} className="bg-white rounded-[2rem] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-slate-50 group hover:shadow-2xl transition-all">
                   <div className="relative aspect-square rounded-[1.5rem] bg-slate-50 mb-5 overflow-hidden">
-                    <img alt={product.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={product.img} />
+                    <img alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={getProductImage(product)} />
                     <button className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-md flex items-center justify-center text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
                       <LuHeart size={20} />
                     </button>
@@ -205,16 +244,16 @@ const FreshCartLanding = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="text-[11px] text-green-600 font-black uppercase tracking-widest mb-1">{product.cat}</p>
-                        <h3 className="font-bold text-slate-900 text-lg">{product.title}</h3>
+                        <p className="text-[11px] text-green-600 font-black uppercase tracking-widest mb-1">{product.category?.name || 'Fresh'}</p>
+                        <h3 className="font-bold text-slate-900 text-lg">{product.name}</h3>
                       </div>
-                      <p className="font-black text-slate-900 text-xl">${product.price}</p>
+                      <p className="font-black text-slate-900 text-xl">{formatCurrency(product.price)}</p>
                     </div>
                     <div className="flex items-center gap-1">
                       <LuStar className="text-yellow-500 fill-yellow-500" size={14} />
                       <span className="text-xs text-slate-500 font-bold">4.8 (120 reviews)</span>
                     </div>
-                    <button className="w-full mt-5 bg-slate-50 hover:bg-green-600 hover:text-white text-slate-900 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                    <button onClick={() => handleAddToCart(product.id)} className="w-full mt-5 bg-slate-50 hover:bg-green-600 hover:text-white text-slate-900 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2">
                       <LuShoppingCart size={18} />
                       Add to Cart
                     </button>
