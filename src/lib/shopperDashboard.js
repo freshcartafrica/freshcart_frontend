@@ -1,4 +1,4 @@
-import { formatCurrency, getProductImage } from './shopper'
+import { formatCurrency, getProductImage, normalizeCategoryKey } from './shopper'
 
 export { formatCurrency, getProductImage }
 
@@ -42,16 +42,15 @@ export function orderStatusMeta(status) {
 }
 
 export function categoryTheme(slug) {
+  const key = normalizeCategoryKey(slug)
   return (
     {
-      fruits: 'bg-amber-50 text-amber-700',
-      vegetables: 'bg-emerald-50 text-emerald-700',
-      drinks: 'bg-sky-50 text-sky-700',
-      staples: 'bg-stone-50 text-stone-700',
-      protein: 'bg-rose-50 text-rose-700',
-      dairy: 'bg-blue-50 text-blue-700',
-      bakery: 'bg-orange-50 text-orange-700',
-    }[slug] || 'bg-neutral-50 text-neutral-700'
+      chicken: 'bg-amber-50 text-amber-700',
+      fish: 'bg-sky-50 text-sky-700',
+      turkey: 'bg-orange-50 text-orange-700',
+      'goat-meat': 'bg-emerald-50 text-emerald-700',
+      'cow-meat': 'bg-rose-50 text-rose-700',
+    }[key] || 'bg-neutral-50 text-neutral-700'
   )
 }
 

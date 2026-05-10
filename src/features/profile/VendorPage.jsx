@@ -2,6 +2,7 @@ import {
   Box,
   History,
   LayoutDashboard,
+  LogOut,
   Plus,
   Search,
   Store,
@@ -17,6 +18,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { NotificationBell } from '../../components/NotificationBell'
 import { endpoints } from '../../lib/api'
 import { formatCurrency, formatOrderNumber, orderStatusMeta } from '../../lib/shopperDashboard'
+import { useAuthStore } from '../../store/authStore'
 
 export default function VendorDashboard() {
   const [profile, setProfile] = useState(null)
@@ -25,6 +27,7 @@ export default function VendorDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const clearSession = useAuthStore((state) => state.clearSession)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -82,6 +85,11 @@ export default function VendorDashboard() {
       o.delivery_address?.toLowerCase().includes(searchQuery.toLowerCase())
     ).slice(0, 5)
   }, [orders, searchQuery])
+
+  const handleLogout = () => {
+    clearSession()
+    navigate('/login', { replace: true })
+  }
 
   if (isLoading) {
     return (
@@ -251,6 +259,14 @@ export default function VendorDashboard() {
               <Store size={16} />
               Store
             </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm font-medium active:bg-red-100"
+            >
+              <LogOut size={16} />
+              Log Out
+            </button>
           </div>
         </div>
 

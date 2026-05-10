@@ -6,11 +6,64 @@ export const fallbackImages = [
 ]
 
 export const categoryArtwork = {
-  fruits: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=1200&q=80',
-  vegetables: 'https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?auto=format&fit=crop&w=1200&q=80',
-  drinks: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=1200&q=80',
-  staples: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=1200&q=80',
-  protein: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=1200&q=80',
+  chicken: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=1200&q=80',
+  fish: 'https://images.unsplash.com/photo-1510130387422-82bed34b37e9?auto=format&fit=crop&w=1200&q=80',
+  turkey: 'https://images.unsplash.com/photo-1603046891744-76e6300f1d38?auto=format&fit=crop&w=1200&q=80',
+  'goat-meat': 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=1200&q=80',
+  'cow-meat': 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=1200&q=80',
+}
+
+export const starterCategoryDefinitions = [
+  { key: 'chicken', slug: 'chicken', name: 'Chicken' },
+  { key: 'fish', slug: 'fish', name: 'Fish' },
+  { key: 'turkey', slug: 'turkey', name: 'Turkey' },
+  { key: 'goat-meat', slug: 'goat-meat', name: 'Goat meat' },
+  { key: 'cow-meat', slug: 'cow-meat', name: 'Cow meat' },
+]
+
+export function normalizeCategoryKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+export function starterCategoryImage(value) {
+  return categoryArtwork[normalizeCategoryKey(value)] || fallbackImages[0]
+}
+
+export function filterMarketplaceCategories(categories = []) {
+  const byKey = new Map(
+    (categories || []).map((category) => [
+      normalizeCategoryKey(category.slug || category.name),
+      category,
+    ]),
+  )
+
+  return starterCategoryDefinitions
+    .map((definition, index) => {
+      const matched = byKey.get(definition.key)
+      if (!matched) return null
+
+      return {
+        ...matched,
+        name: definition.name,
+        slug: definition.slug,
+        image_url: matched.image_url || starterCategoryImage(definition.key),
+        sort_order: index,
+      }
+    })
+    .filter(Boolean)
+}
+
+export function filterMarketplaceProducts(products = []) {
+  const allowedKeys = new Set(starterCategoryDefinitions.map((item) => item.key))
+
+  return (products || []).filter((product) =>
+    allowedKeys.has(normalizeCategoryKey(product?.category?.slug || product?.category?.name)),
+  )
 }
 
 export function formatCurrency(amount) {
@@ -23,7 +76,10 @@ export function formatCurrency(amount) {
 
 export function getProductImage(product, index = 0) {
   if (product?.image_url) return product.image_url
-  return categoryArtwork[product?.category?.slug] || fallbackImages[index % fallbackImages.length]
+  return (
+    starterCategoryImage(product?.category?.slug || product?.category?.name) ||
+    fallbackImages[index % fallbackImages.length]
+  )
 }
 
 export function buildProductGallery(product) {
@@ -72,7 +128,7 @@ export function buildOrderTimeline(order) {
 export function authLandingPath(user) {
   if (user?.role === 'vendor') return '/vendor/onboarding'
   if (user?.role === 'admin') return '/admin'
-  return '/onboarding'
+  return '/dashboard'
 }
 
 export function dashboardPath(user) {
@@ -82,7 +138,7 @@ export function dashboardPath(user) {
 }
 
 export function hasCompletedOnboarding(user, onboardingRecords = {}) {
-  if (!user || user.role === 'admin') return true
+  if (!user || user.role === 'admin' || user.role === 'user') return true
   return Boolean(onboardingRecords?.[user.id]?.completed)
 }
 

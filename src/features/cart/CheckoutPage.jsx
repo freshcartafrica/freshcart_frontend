@@ -12,8 +12,10 @@ import { useAuthStore } from '../../store/authStore'
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
+  const checkoutStorageKey = `freshcart-checkout-details-${user?.id || 'guest'}`
   const [step, setStep] = useState('checkout')
   const [cart, setCart] = useState(null)
+  const [orders, setOrders] = useState([])
   const [form, setForm] = useState({
     fullName: user?.full_name || '',
     phone: user?.phone || '',
@@ -30,8 +32,10 @@ export default function CheckoutPage() {
 
     const load = async () => {
       try {
-        const response = await endpoints.cart()
-        if (!cancelled) setCart(response.data)
+        const [cartResponse, ordersResponse] = await Promise.all([endpoints.cart(), endpoints.orders()])
+        if (cancelled) return
+        setCart(cartResponse.data)
+        setOrders(ordersResponse.data)
       } catch {
         if (!cancelled) setError('Unable to load checkout summary.')
       }
@@ -43,12 +47,35 @@ export default function CheckoutPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const savedDetails = JSON.parse(window.localStorage.getItem(checkoutStorageKey) || 'null')
+    const latestOrder = orders[0]
+
+    setForm((current) => ({
+      ...current,
+      fullName: current.fullName || savedDetails?.fullName || user?.full_name || '',
+      phone: current.phone || savedDetails?.phone || user?.phone || '',
+      delivery_address: current.delivery_address || savedDetails?.delivery_address || latestOrder?.delivery_address || '',
+      delivery_instructions: current.delivery_instructions || savedDetails?.delivery_instructions || '',
+    }))
+  }, [checkoutStorageKey, orders, user?.full_name, user?.phone])
+
+  useEffect(() => {
+    window.localStorage.setItem(checkoutStorageKey, JSON.stringify(form))
+  }, [checkoutStorageKey, form])
+
   const subtotal = cart?.subtotal || 0
   const deliveryFee = useMemo(() => (cart?.items?.length ? estimateDeliveryFee(subtotal) : 0), [cart, subtotal])
   const discount = useMemo(() => estimateDiscount(subtotal, form.coupon_code), [form.coupon_code, subtotal])
   const total = useMemo(() => subtotal + deliveryFee - discount, [deliveryFee, discount, subtotal])
 
   const placeOrder = async () => {
+    if (!form.fullName.trim() || !form.phone.trim() || !form.delivery_address.trim()) {
+      setError('Full name, phone number, and delivery address are required before you complete this purchase.')
+      setStep('checkout')
+      return
+    }
+
     try {
       setSubmitting(true)
       setError('')
@@ -57,6 +84,15 @@ export default function CheckoutPage() {
         payment_method: form.payment_method,
         coupon_code: form.coupon_code || undefined,
       })
+      window.localStorage.setItem(
+        checkoutStorageKey,
+        JSON.stringify({
+          fullName: form.fullName.trim(),
+          phone: form.phone.trim(),
+          delivery_address: form.delivery_address.trim(),
+          delivery_instructions: form.delivery_instructions.trim(),
+        }),
+      )
       navigate(`/track-rider/${response.data.id}`)
     } catch (submitError) {
       setError(submitError?.response?.data?.detail || 'Unable to place this order.')
@@ -209,9 +245,14 @@ export default function CheckoutPage() {
             </div>
 
             <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-neutral-200 bg-white px-4 py-3">
-              <button className="h-12 w-full rounded-2xl bg-orange-500 font-bold text-white shadow-lg" onClick={placeOrder}>
-                {submitting ? 'Placing Order...' : `Pay ${formatCurrency(total)} • Place Order`}
-              </button>
+              <div className="mx-auto flex max-w-7xl gap-3">
+                <button className="h-12 flex-1 rounded-2xl border border-neutral-200 bg-white font-bold text-neutral-700" onClick={() => setStep('checkout')}>
+                  Back
+                </button>
+                <button className="h-12 flex-[1.6] rounded-2xl bg-orange-500 font-bold text-white shadow-lg" onClick={placeOrder}>
+                  {submitting ? 'Completing Purchase...' : `Complete Purchase • ${formatCurrency(total)}`}
+                </button>
+              </div>
             </div>
           </>
         )}

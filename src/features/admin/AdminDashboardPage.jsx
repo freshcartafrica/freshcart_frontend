@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { NotificationBell } from '../../components/NotificationBell'
 import { endpoints } from '../../lib/api'
+import { filterMarketplaceCategories, starterCategoryDefinitions, starterCategoryImage } from '../../lib/shopper'
 import { formatCurrency } from '../../lib/shopperDashboard'
 
 const emptyCategory = { name: '', image_url: '' }
@@ -24,7 +25,7 @@ export default function AdminDashboardPage() {
       endpoints.adminPendingProducts(),
     ])
     setAnalytics(analyticsResponse.data)
-    setCategories(categoriesResponse.data)
+    setCategories(filterMarketplaceCategories(categoriesResponse.data))
     setVendors(vendorsResponse.data)
     setPendingProducts(pendingProductsResponse.data)
   }
@@ -53,7 +54,7 @@ export default function AdminDashboardPage() {
     try {
       await endpoints.createCategory({
         name: categoryForm.name.trim(),
-        image_url: categoryForm.image_url.trim() || undefined,
+        image_url: categoryForm.image_url.trim() || starterCategoryImage(categoryForm.name),
       })
       setCategoryForm(emptyCategory)
       setSuccess('Category added successfully.')
@@ -136,7 +137,14 @@ export default function AdminDashboardPage() {
         <div className="surface p-6">
           <h2 className="font-display text-2xl font-extrabold text-brand-ink">Category management</h2>
           <form className="mt-5 grid gap-3" onSubmit={handleCreateCategory}>
-            <input value={categoryForm.name} onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} className="rounded-[20px] border border-brand-ink/10 bg-brand-cream px-4 py-3 text-sm outline-none" placeholder="Category name" required />
+            <select value={categoryForm.name} onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} className="rounded-[20px] border border-brand-ink/10 bg-brand-cream px-4 py-3 text-sm outline-none" required>
+              <option value="">Select starter category</option>
+              {starterCategoryDefinitions.map((category) => (
+                <option key={category.key} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
             <input value={categoryForm.image_url} onChange={(event) => setCategoryForm((current) => ({ ...current, image_url: event.target.value }))} className="rounded-[20px] border border-brand-ink/10 bg-brand-cream px-4 py-3 text-sm outline-none" placeholder="Category image URL" />
             <button className="primary-button inline-flex items-center justify-center gap-2">
               <Plus size={16} />

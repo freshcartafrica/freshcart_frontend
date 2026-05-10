@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { endpoints } from '../../lib/api'
 import { dashboardPath } from '../../lib/shopper'
+import { filterMarketplaceCategories } from '../../lib/shopper'
 import { useAuthStore } from '../../store/authStore'
 
 export default function VendorOnboardingPage() {
@@ -34,7 +35,7 @@ export default function VendorOnboardingPage() {
     const loadCategories = async () => {
       try {
         const response = await endpoints.categories()
-        if (!cancelled) setCategories(response.data)
+        if (!cancelled) setCategories(filterMarketplaceCategories(response.data))
       } catch {
         if (!cancelled) setError('Unable to load admin-approved categories right now.')
       }

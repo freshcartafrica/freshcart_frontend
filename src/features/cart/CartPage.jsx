@@ -3,12 +3,13 @@ import {
   ChevronRight,
   Clock,
   MapPin,
+  Minus,
   Plus,
   ShoppingCart,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { endpoints } from '../../lib/api'
 import { countCartItems, formatCurrency, getProductImage } from '../../lib/shopperDashboard'
 
@@ -60,10 +61,22 @@ export default function CartCheckoutPage() {
     }
   }
 
-  const removeItem = async (productId) => {
+  const removeOne = async (productId) => {
     try {
       setUpdatingId(productId)
       const response = await endpoints.removeFromCart({ product_id: productId, quantity: 1 })
+      setCart(response.data)
+    } catch (submitError) {
+      setError(submitError?.response?.data?.detail || 'Unable to remove this item.')
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const removeItemCompletely = async (productId, quantity) => {
+    try {
+      setUpdatingId(productId)
+      const response = await endpoints.removeFromCart({ product_id: productId, quantity })
       setCart(response.data)
     } catch (submitError) {
       setError(submitError?.response?.data?.detail || 'Unable to remove this item.')
@@ -113,14 +126,17 @@ export default function CartCheckoutPage() {
                           <h3 className="text-sm font-bold text-neutral-900">{item.product_name}</h3>
                           <p className="mt-0.5 text-xs text-neutral-400">{formatCurrency(item.unit_price)} each</p>
                         </div>
-                        <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 active:bg-red-100" onClick={() => removeItem(item.product_id)}>
+                        <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 active:bg-red-100" onClick={() => removeItemCompletely(item.product_id, item.quantity)}>
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </button>
                       </div>
                       <div className="mt-3 flex items-center justify-between">
                         <div className="flex items-center rounded-xl border border-neutral-200 bg-neutral-50">
+                          <button className="flex h-8 w-8 items-center justify-center border-r border-neutral-200" onClick={() => removeOne(item.product_id)}>
+                            <Minus className="h-3.5 w-3.5 text-neutral-700" />
+                          </button>
                           <span className="w-8 text-center text-sm font-bold">{item.quantity}</span>
-                          <button className="flex h-8 w-8 items-center justify-center" onClick={() => addOne(item.product_id)}>
+                          <button className="flex h-8 w-8 items-center justify-center border-l border-neutral-200" onClick={() => addOne(item.product_id)}>
                             <Plus className="h-3.5 w-3.5 text-neutral-700" />
                           </button>
                         </div>
@@ -196,7 +212,7 @@ export default function CartCheckoutPage() {
             <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-neutral-200 bg-white px-4 py-3">
               <button className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 font-bold text-white shadow-lg" onClick={() => navigate('/checkout')}>
                 <ShoppingCart className="h-5 w-5" />
-                Checkout • {formatCurrency(total)}
+                Complete Purchase • {formatCurrency(total)}
               </button>
             </div>
           </>

@@ -17,7 +17,6 @@ export default function OnboardingPage() {
     address: '',
     city: '',
     state: '',
-    emergencyContact: '',
     deliveryNote: '',
     password: '',
     acceptedTerms: false,
@@ -29,8 +28,7 @@ export default function OnboardingPage() {
       formData.email &&
       formData.phone &&
       formData.dob &&
-      formData.gender &&
-      formData.emergencyContact) ||
+      formData.gender) ||
     (step === 2 &&
       formData.address &&
       formData.city &&
@@ -76,7 +74,7 @@ export default function OnboardingPage() {
 
             <h2 className="text-2xl font-bold mb-2 tracking-tight">Customer onboarding</h2>
             <p className="text-slate-400 text-xs leading-relaxed mb-8">
-              Complete your profile, delivery details, and account security before your shopper dashboard opens.
+              Basic account setup only. Delivery details are collected and saved during your first checkout.
             </p>
 
             <div className="space-y-5">
@@ -110,7 +108,7 @@ export default function OnboardingPage() {
           <form onSubmit={handleFinalSubmit} className="space-y-6">
             <div>
               <h3 className="text-xl font-bold text-slate-900">{stepTitle}</h3>
-              <p className="text-slate-500 text-xs mt-1">All required onboarding details must be submitted before dashboard access is unlocked.</p>
+              <p className="text-slate-500 text-xs mt-1">Delivery details are saved from checkout, so this page only covers your basic account profile.</p>
             </div>
 
             {step === 1 ? (
@@ -139,10 +137,6 @@ export default function OnboardingPage() {
                     <option value="male">Male</option>
                     <option value="other">Other</option>
                   </select>
-                </div>
-                <div>
-                  <label className="block text-[9px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Emergency Contact</label>
-                  <input type="tel" name="emergencyContact" value={formData.emergencyContact} onChange={handleInputChange} required className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs" />
                 </div>
               </div>
             ) : null}

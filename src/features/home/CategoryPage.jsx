@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { endpoints } from '../../lib/api'
 import { addProductToCart } from '../../lib/cartActions'
+import { filterMarketplaceCategories, filterMarketplaceProducts } from '../../lib/shopper'
 import {
   categoryTheme,
   countCartItems,
@@ -54,13 +55,13 @@ export default function CategoryDetailPage() {
 
         if (cancelled) return
 
-        const categoryList = categoriesResponse.data
+        const categoryList = filterMarketplaceCategories(categoriesResponse.data)
         const matchedCategory =
           categoryList.find((item) => String(item.id) === String(categoryId)) ||
           categoryList.find((item) => item.slug === categoryId)
 
         setCategories(categoryList)
-        setProducts(productsResponse.data)
+        setProducts(filterMarketplaceProducts(productsResponse.data))
         setCart(cartResponse?.data || null)
         setSelectedCategory(matchedCategory?.slug || 'all')
       } catch {

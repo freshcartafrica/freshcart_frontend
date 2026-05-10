@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { NotificationBell } from '../../components/NotificationBell'
 import { endpoints } from '../../lib/api'
+import { filterMarketplaceCategories } from '../../lib/shopper'
 
 const emptyForm = {
   name: '',
@@ -43,7 +44,7 @@ export default function UploadProductPage() {
           endpoints.vendorProfile(),
         ])
         if (cancelled) return
-        setCategories(categoriesResponse.data)
+        setCategories(filterMarketplaceCategories(categoriesResponse.data))
         setVendorProfile(profileResponse.data)
       } catch (loadError) {
         if (!cancelled) setError(loadError?.response?.data?.detail || 'Unable to load product upload tools.')

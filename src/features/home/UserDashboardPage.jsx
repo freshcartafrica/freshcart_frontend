@@ -14,6 +14,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { NotificationBell } from '../../components/NotificationBell'
 import { endpoints } from '../../lib/api'
 import { addProductToCart } from '../../lib/cartActions'
+import { filterMarketplaceCategories, filterMarketplaceProducts } from '../../lib/shopper'
 import {
   activeOrderFromList,
   countCartItems,
@@ -51,8 +52,8 @@ export default function FreshCartDashboard() {
         ])
 
         if (cancelled) return
-        setCategories(categoriesResponse.data)
-        setProducts(productsResponse.data)
+        setCategories(filterMarketplaceCategories(categoriesResponse.data))
+        setProducts(filterMarketplaceProducts(productsResponse.data))
         setOrders(ordersResponse.data)
         setCart(cartResponse.data)
       } catch {

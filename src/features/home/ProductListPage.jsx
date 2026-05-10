@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { endpoints } from '../../lib/api'
 import { addProductToCart } from '../../lib/cartActions'
+import { filterMarketplaceCategories, filterMarketplaceProducts } from '../../lib/shopper'
 import { countCartItems, formatCurrency, getProductImage, productBadge } from '../../lib/shopperDashboard'
 import { useAuthStore } from '../../store/authStore'
 
@@ -37,8 +38,8 @@ export default function ProductListPage() {
         const [productsResponse, categoriesResponse, cartResponse] = await Promise.all(requests)
 
         if (cancelled) return
-        setProducts(productsResponse.data)
-        setCategories(categoriesResponse.data)
+        setProducts(filterMarketplaceProducts(productsResponse.data))
+        setCategories(filterMarketplaceCategories(categoriesResponse.data))
         setCart(cartResponse?.data || null)
       } catch {
         if (!cancelled) setError('Unable to load the product catalog right now.')

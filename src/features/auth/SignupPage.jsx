@@ -13,6 +13,7 @@ export default function SignUp() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+    phone: '',
     password: '',
     businessName: '',
     acceptedTerms: false,
@@ -37,6 +38,7 @@ export default function SignUp() {
       await endpoints.register({
         full_name: formData.fullName.trim(),
         email: formData.email.trim(),
+        phone: role === 'vendor' ? formData.phone.trim() : undefined,
         password: formData.password,
         role: role === 'vendor' ? 'vendor' : 'user',
         business_name: role === 'vendor' ? formData.businessName.trim() : undefined,
@@ -47,8 +49,10 @@ export default function SignUp() {
         password: formData.password,
         setSession,
         navigate,
-        onResolvedUser: async (user) => resetOnboarding(user),
-        resolvePath: (user) => authLandingPath(user),
+        onResolvedUser: async (user) => {
+          if (user.role === 'vendor') resetOnboarding(user)
+        },
+        resolvePath: (user) => (user.role === 'vendor' ? authLandingPath(user) : authLandingPath(user)),
       })
     } catch (submitError) {
       setError(submitError?.response?.data?.detail || 'Unable to create your account right now.')
@@ -212,18 +216,32 @@ export default function SignUp() {
               </div>
 
               {role === 'vendor' ? (
-                <div>
-                  <label className="block text-[9px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Business Name</label>
-                  <input
-                    type="text"
-                    name="businessName"
-                    value={formData.businessName}
-                    onChange={handleChange}
-                    placeholder="Green Farm Produce"
-                    required
-                    className="w-full pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-orange-500/60 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-slate-400"
-                  />
-                </div>
+                <>
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+234 800 000 0000"
+                      required
+                      className="w-full pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-orange-500/60 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Business Name</label>
+                    <input
+                      type="text"
+                      name="businessName"
+                      value={formData.businessName}
+                      onChange={handleChange}
+                      placeholder="Green Farm Produce"
+                      required
+                      className="w-full pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-orange-500/60 focus:ring-4 focus:ring-orange-500/10 transition-all placeholder:text-slate-400"
+                    />
+                  </div>
+                </>
               ) : null}
 
               {/* Terms and Conditions */}
